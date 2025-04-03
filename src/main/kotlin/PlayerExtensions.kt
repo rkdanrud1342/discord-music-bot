@@ -32,7 +32,9 @@ suspend fun Player.playNext(): TrackWrapper? {
     val trackWrapper = playlist.removeFirstOrNull() ?: return null
 
     currentPlayingTrackMap[this] = trackWrapper
-    playTrack(trackWrapper.track)
+    playTrack(trackWrapper.track) {
+        volume = 70
+    }
 
     return trackWrapper
 }
