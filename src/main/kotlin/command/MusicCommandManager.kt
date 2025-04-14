@@ -212,6 +212,7 @@ class MusicCommandManager(private val link: LavaKord) {
                 channel.createMessage { embed { description = "음원 재생이 끝났어요." } }
                 player.clear()
                 disconnectAudio()
+                linkMap.remove(guild.id)?.destroy()
             }
 
             linkMap[guild.id] = this
