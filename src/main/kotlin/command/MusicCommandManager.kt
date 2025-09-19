@@ -62,16 +62,15 @@ class MusicCommandManager(private val link: LavaKord) {
 
                 field { } // for space between current track and playlist
 
-                val playlistString = buildString {
-                    playlist.forEachIndexed { index, trackWrapper ->
-                        appendLine("`#${index + 1}` [${trackWrapper.track.info.title}](${trackWrapper.track.info.uri}) - ${trackWrapper.regUserMention}\n")
+                playlist.forEachIndexed { index, trackWrapper ->
+                    field {
+                        if (index == 0) {
+                            name = "대기열"
+                        }
+
+                        value = "`#${index + 1}` [${trackWrapper.track.info.title}](${trackWrapper.track.info.uri}) - ${trackWrapper.regUserMention}\n"
                     }
                 }
-
-                field(
-                    name = "대기열",
-                    value = { playlistString }
-                )
             }
         }
     }
