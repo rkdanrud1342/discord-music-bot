@@ -19,6 +19,10 @@ fun Player.register(trackWrapper: TrackWrapper) {
     playlistMap[this]?.add(trackWrapper) ?: mutableListOf(trackWrapper).also { playlistMap[this] = it }
 }
 
+fun Player.register(trackWrappers: List<TrackWrapper>) {
+    playlistMap[this]?.addAll(trackWrappers) ?: trackWrappers.toMutableList().also { playlistMap[this] = it }
+}
+
 fun Player.hasNext(): Boolean {
     val playlist = playlistMap[this] ?: return false
     return playlist.isNotEmpty()

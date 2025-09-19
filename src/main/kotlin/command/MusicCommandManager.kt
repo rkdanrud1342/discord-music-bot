@@ -80,7 +80,7 @@ class MusicCommandManager(private val link: LavaKord) {
         val link = getLink(guild, channel)
 
         val query = command.strings["query"] ?: run {
-            respondEphemeral { embed { description = "주소 또는 검색어가 없어요." } }
+            respondEphemeral { embed { description = "주소나 검색어를 알려주세요." } }
             return
         }
 
@@ -90,10 +90,122 @@ class MusicCommandManager(private val link: LavaKord) {
             "ytsearch:$query"
         }
 
-        val track = when (val item = link.loadItem(search)) {
-            is LoadResult.TrackLoaded -> item.data
-            is LoadResult.PlaylistLoaded -> item.data.tracks.first()
-            is LoadResult.SearchResult -> item.data.tracks.first()
+        when (val item = link.loadItem(search)) {
+            is LoadResult.TrackLoaded -> {
+                val track = item.data
+
+                val trackWrapper = TrackWrapper(
+                    regUserMention = getMember().mention,
+                    track = track
+                )
+
+                if (link.state != Link.State.CONNECTED) {
+                    val voiceState = getMember().getVoiceStateOrNull()
+
+                    if (voiceState?.channelId == null) {
+                        respondEphemeral { embed { description = "먼저 보이스 채널에 접속하세요." } }
+                        return
+                    }
+
+                    link.connectAudio(voiceState.channelId!!.value)
+                }
+
+                link.player.register(trackWrapper)
+
+                if (!link.player.isPlaying) {
+                    link.player.playNext()
+                }
+
+                respondPublic {
+                    embed {
+                        author {
+                            this.name = "음원을 추가했어요."
+                        }
+
+                        description =
+                            "[${trackWrapper.track.info.title}](${trackWrapper.track.info.uri}) - ${trackWrapper.regUserMention}"
+                        thumbnail { url = "${trackWrapper.track.info.artworkUrl}" }
+                    }
+                }
+                return
+            }
+            is LoadResult.PlaylistLoaded -> {
+                val regUserMention = getMember().mention
+                val trackWrappers = item.data.tracks.map { track ->
+                    TrackWrapper(
+                        regUserMention = regUserMention,
+                        track = track
+                    )
+                }
+
+                if (link.state != Link.State.CONNECTED) {
+                    val voiceState = getMember().getVoiceStateOrNull()
+
+                    if (voiceState?.channelId == null) {
+                        respondEphemeral { embed { description = "먼저 보이스 채널에 접속하세요." } }
+                        return
+                    }
+
+                    link.connectAudio(voiceState.channelId!!.value)
+                }
+
+                link.player.register(trackWrappers)
+
+                if (!link.player.isPlaying) {
+                    link.player.playNext()
+                }
+
+                respondPublic {
+                    embed {
+                        author {
+                            this.name = "플레이 리스트를 추가했어요."
+                        }
+
+                        description =
+                            "${item.data.info.name} - $regUserMention"
+                        thumbnail { url = "${trackWrappers.first().track.info.artworkUrl}" }
+                    }
+                }
+                return
+            }
+            is LoadResult.SearchResult -> {
+                val track = item.data.tracks.first()
+
+                val trackWrapper = TrackWrapper(
+                    regUserMention = getMember().mention,
+                    track = track
+                )
+
+                if (link.state != Link.State.CONNECTED) {
+                    val voiceState = getMember().getVoiceStateOrNull()
+
+                    if (voiceState?.channelId == null) {
+                        respondEphemeral { embed { description = "먼저 보이스 채널에 접속하세요." } }
+                        return
+                    }
+
+                    link.connectAudio(voiceState.channelId!!.value)
+                }
+
+                link.player.register(trackWrapper)
+
+                if (!link.player.isPlaying) {
+                    link.player.playNext()
+                }
+
+                respondPublic {
+                    embed {
+                        author {
+                            this.name = "음원을 추가했어요."
+                        }
+
+                        description =
+                            "[${trackWrapper.track.info.title}](${trackWrapper.track.info.uri}) - ${trackWrapper.regUserMention}"
+                        thumbnail { url = "${trackWrapper.track.info.artworkUrl}" }
+                    }
+                }
+                return
+            }
             is LoadResult.NoMatches -> {
                 respondEphemeral { embed { description = "음원을 찾을 수 없어요" } }
                 return
@@ -101,40 +213,6 @@ class MusicCommandManager(private val link: LavaKord) {
             is LoadResult.LoadFailed -> {
                 respondEphemeral { embed { description = "음원을 불러올 수 없어요." } }
                 return
-            }
-        }
-
-        val trackWrapper = TrackWrapper(
-            regUserMention = getMember().mention,
-            track = track
-        )
-
-        link.player.register(trackWrapper)
-
-        if (link.state != Link.State.CONNECTED) {
-            val voiceState = getMember().getVoiceStateOrNull()
-
-            if (voiceState?.channelId == null) {
-                respondEphemeral { embed { description = "먼저 보이스 채널에 접속하세요." } }
-                return
-            }
-
-            link.connectAudio(voiceState.channelId!!.value)
-        }
-
-        if (!link.player.isPlaying) {
-            link.player.playNext()
-        }
-
-        respondPublic {
-            embed {
-                author {
-                    this.name = "음원을 추가했어요."
-                }
-
-                description =
-                    "[${trackWrapper.track.info.title}](${trackWrapper.track.info.uri}) - ${trackWrapper.regUserMention}"
-                thumbnail { url = "${trackWrapper.track.info.artworkUrl}" }
             }
         }
     }
