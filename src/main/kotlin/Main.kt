@@ -1,34 +1,34 @@
 package com.rusine
 
 import com.rusine.command.MusicCommandManager
-import com.rusine.models.Data
 import dev.kord.core.Kord
 import dev.kord.gateway.Intent
 import dev.kord.gateway.Intents
 import dev.kord.gateway.NON_PRIVILEGED
 import dev.kord.gateway.PrivilegedIntent
 import dev.schlaubi.lavakord.kord.lavakord
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import java.io.File
 
 
 suspend fun main() {
-    val serializer = Json {
-        prettyPrint = true
-        encodeDefaults = true
-        ignoreUnknownKeys = true
-        serializersModule = SerializersModule {}
+    val token = System.getenv("DISCORD_TOKEN") ?: run {
+        println("NO DISCORD_TOKEN Provided")
+        return
     }
 
-    val file = File("./app_info.txt")
-    val data = serializer.decodeFromString<Data>(file.readText())
+    val url = System.getenv("LAVA_LINK_URL") ?: run {
+        println("NO LAVA_LINK_URL Provided")
+        return
+    }
+    val pw = System.getenv("LAVA_LINK_PW") ?: run {
+        println("NO LAVA_LINK_PW Provided")
+        return
+    }
 
-    val kord = Kord(data.token)
+    val kord = Kord(token)
 
     val musicCommandManager = MusicCommandManager(
         kord.lavakord().apply {
-            addNode(serverUri = data.url, password = data.password)
+            addNode(serverUri = url, password = pw)
         }
     )
 
