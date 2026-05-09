@@ -111,10 +111,6 @@ class MusicCommandManager(private val link: LavaKord) {
 
                 link.player.register(trackWrapper)
 
-                if (!link.player.isPlaying) {
-                    link.player.playNext()
-                }
-
                 respondPublic {
                     embed {
                         author {
@@ -126,6 +122,11 @@ class MusicCommandManager(private val link: LavaKord) {
                         thumbnail { url = "${trackWrapper.track.info.artworkUrl}" }
                     }
                 }
+
+                if (!link.player.isPlaying) {
+                    link.player.playNext()
+                }
+
                 return
             }
             is LoadResult.PlaylistLoaded -> {
@@ -188,10 +189,6 @@ class MusicCommandManager(private val link: LavaKord) {
 
                 link.player.register(trackWrapper)
 
-                if (!link.player.isPlaying) {
-                    link.player.playNext()
-                }
-
                 respondPublic {
                     embed {
                         author {
@@ -203,6 +200,11 @@ class MusicCommandManager(private val link: LavaKord) {
                         thumbnail { url = "${trackWrapper.track.info.artworkUrl}" }
                     }
                 }
+
+                if (!link.player.isPlaying) {
+                    link.player.playNext()
+                }
+
                 return
             }
             is LoadResult.NoMatches -> {
